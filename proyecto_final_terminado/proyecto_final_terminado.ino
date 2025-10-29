@@ -129,21 +129,27 @@ void loop() {
   // ---------- Depuración por USB ----------
   Serial.println(datos);
 
-  // ---------- Guardar en SD ----------
+// ---------- Guardar en SD ----------
 if (sd_ok) {
-  File dataFile = SD.open("datalog.txt", FILE_WRITE);  // crea/abre en append
+  File dataFile = SD.open("datalog.csv", FILE_WRITE);  // crea/abre en modo append
   if (dataFile) {
-    dataFile.print(datestring);
-    dataFile.print(", Temp:"); dataFile.print(temp, 1);
-    dataFile.print(", Hum:");  dataFile.print(hum, 0);
-    dataFile.print(", Luz:");  dataFile.print(luzPct);
-    dataFile.print(", Fuego:");
+    // Si el archivo recién se crea, escribimos encabezado
+    if (dataFile.size() == 0) {
+      dataFile.println("FechaHora,Temperatura,Humedad,Luz,Fuego");
+    }
+
+    // Escribimos los datos separados por comas
+    dataFile.print(datestring); dataFile.print(",");
+    dataFile.print(temp, 1);    dataFile.print(",");
+    dataFile.print(hum, 0);     dataFile.print(",");
+    dataFile.print(luzPct);     dataFile.print(",");
     if (fireDigital == LOW) dataFile.println("ON");
     else dataFile.println("OFF");
+
     dataFile.close();
   } else {
-    Serial.println("Error al abrir datalog.txt (¿SD removida?)");
-    sd_ok = false;                    // marcar caída → activar reintentos
+    Serial.println("Error al abrir datalog.csv");
+    sd_ok = false;
     lastSdRetry = millis();
   }
 } else {
@@ -155,6 +161,7 @@ if (sd_ok) {
     if (sd_ok) Serial.println("SD detectada nuevamente");
   }
 }
+
 
   // ---------- LCD ----------
   lcd.clear();
